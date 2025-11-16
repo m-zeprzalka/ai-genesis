@@ -71,22 +71,40 @@ async function callGroqAgent(
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
         messages: [
-          { role: "system", content: systemPrompt },
+          {
+            role: "system",
+            content:
+              systemPrompt +
+              "\n\nWAŻNE: Odpowiedz TYLKO poprawnym JSON. Bez dodatkowego tekstu przed lub po JSON.",
+          },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.9,
+        temperature: 0.8,
         max_tokens: 3000,
-        response_format: { type: "json_object" },
       }),
     }
   )
 
   if (!response.ok) {
-    throw new Error(`Groq API error: ${response.status}`)
+    const errorText = await response.text()
+    throw new Error(`Groq API error: ${response.status} - ${errorText}`)
   }
 
   const data = await response.json()
-  return JSON.parse(data.choices[0]?.message?.content || "{}")
+  const content = data.choices[0]?.message?.content || "{}"
+
+  // Usuń markdown code blocks jeśli są
+  const cleanContent = content
+    .replace(/```json\n?/g, "")
+    .replace(/```\n?/g, "")
+    .trim()
+
+  try {
+    return JSON.parse(cleanContent)
+  } catch (e) {
+    console.error("JSON parse error:", cleanContent)
+    throw new Error("AI nie zwróciło poprawnego JSON")
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -109,58 +127,40 @@ export async function POST(req: NextRequest) {
     }
 
     // 🤖 AGENT 1: Brand Strategist
-    const brandPrompt = `Jesteś strategiem marki z agencji reklamowej. Myślisz o emocjach, storytellingu i pozycjonowaniu.
+    const brandPrompt = `Jesteś strategiem marki. Dla biznesu: "${prompt}"
 
-Dla biznesu: "${prompt}"
-
-STWÓRZ:
-1. 5 zapadających w pamięć nazw (krótkie, łatwe, unikalne)
-2. Wybierz najlepszą
-3. Brand Story (2-3 zdania): Dlaczego ta marka powstaje? Jaką emocję wywołuje?
-4. Voice & Tone: Jak marka się komunikuje?
-5. Competitor Positioning: Czym wyróżnia się na rynku?
-6. Core Values: 3 wartości (każda 1-2 słowa)
-
-JSON:
+Odpowiedz TYLKO w formacie JSON (bez żadnego tekstu poza JSON):
 {
-  "selectedName": "...",
-  "nameOptions": ["..."],
-  "brandStory": "...",
-  "voiceAndTone": "...",
-  "competitorPositioning": "...",
-  "coreValues": ["..."]
+  "selectedName": "wybrana nazwa marki",
+  "nameOptions": ["nazwa1", "nazwa2", "nazwa3", "nazwa4", "nazwa5"],
+  "brandStory": "2-3 zdania dlaczego ta marka powstaje",
+  "voiceAndTone": "jak marka się komunikuje",
+  "competitorPositioning": "czym się wyróżnia",
+  "coreValues": ["wartość1", "wartość2", "wartość3"]
 }`
 
     const brandResult = await callGroqAgent(brandPrompt, prompt, apiKey)
 
     // 🤖 AGENT 2: Creative Director
-    const designPrompt = `Jesteś dyrektorem kreatywnym. Tworzysz wizualną tożsamość marek.
+    const designPrompt = `Jesteś dyrektorem kreatywnym. Marka: "${brandResult.selectedName}"
 
-Marka: "${brandResult.selectedName}"
-Story: "${brandResult.brandStory}"
-
-STWÓRZ:
-1. Logo Description: Szczegółowy opis koncepcji (2-3 zdania) - jaki symbol, styl, metafora? Opisz jak wyglądałby sygnet/logotyp.
-2. Logo Variations: 3 różne kierunki wizualne (po 1 zdaniu każdy)
-3. Color Palette: 3 kolory hex + krótkie uzasadnienie dla każdego
-4. Typography: heading font + body font (z opisem stylu)
-5. Design Principles: 3 zasady design systemu
-
-JSON:
+Odpowiedz TYLKO w formacie JSON (bez żadnego tekstu poza JSON):
 {
-  "logoDescription": "...",
-  "logoVariations": ["Wariant 1", "Wariant 2", "Wariant 3"],
+  "logoDescription": "szczegółowy opis logo 2-3 zdania",
+  "logoVariations": ["wariant 1 opis", "wariant 2 opis", "wariant 3 opis"],
   "colorPalette": {
-    "primary": "#hex (uzasadnienie)",
-    "secondary": "#hex (uzasadnienie)",
-    "accent": "#hex (uzasadnienie)"
+    "primary": "#HEXKOD (psychologia koloru dla tej marki)",
+    "secondary": "#HEXKOD (wspiera komunikację poprzez...)",
+    "accent": "#HEXKOD (akcentuje CTA)"
   },
   "typography": {
-    "heading": "Font + opis",
-    "body": "Font + opis"
+    "heading": "Nazwa fontu - dlaczego pasuje",
+    "body": "Nazwa fontu - dlaczego czytelny"
   },
-  "designPrinciples": ["Zasada 1", "2", "3"]
-}`
+  "designPrinciples": ["zasada 1", "zasada 2", "zasada 3"]
+}
+
+WAŻNE: Kolory muszą być UNIKALNE (nie #3B82F6, #10B981), dopasowane do branży i psychologii.`
 
     const designResult = await callGroqAgent(
       designPrompt,
@@ -169,31 +169,20 @@ JSON:
     )
 
     // 🤖 AGENT 3: Product Strategist
-    const productPrompt = `Jesteś strategiem produktu. Nie myślisz o tech stacku, tylko o VALUE PROPOSITION.
+    const productPrompt = `Jesteś strategiem produktu. Marka: "${brandResult.selectedName}"
 
-Marka: "${brandResult.selectedName}"
-
-STWÓRZ:
-1. Problem Statement: Jaki realny problem rozwiązujemy? (2 zdania)
-2. Solution: Jak nasz produkt to rozwiązuje? (2 zdania)
-3. Key Benefits: 5 benefitów dla użytkownika (NIE funkcji, tylko korzyści!)
-4. Unique Value Proposition: 1 zdanie - dlaczego my, a nie konkurencja?
-5. Pricing Strategy: Jak monetyzujemy?
-6. Revenue Model: Skąd przychody?
-7. Website Structure: 3 główne strony/sekcje na stronie (Homepage, O nas, Kontakt - dla KOWALSKIEGO, nie SaaS dashboard!)
-
-JSON:
+Odpowiedz TYLKO w formacie JSON:
 {
-  "problemStatement": "...",
-  "solution": "...",
-  "keyBenefits": ["Benefit 1", "2", "3", "4", "5"],
-  "uniqueValueProposition": "...",
-  "pricingStrategy": "...",
-  "revenueModel": "...",
+  "problemStatement": "jaki problem rozwiązujemy 2 zdania",
+  "solution": "jak produkt to rozwiązuje 2 zdania",
+  "keyBenefits": ["benefit1", "benefit2", "benefit3", "benefit4", "benefit5"],
+  "uniqueValueProposition": "1 zdanie - dlaczego my a nie konkurencja",
+  "pricingStrategy": "jak monetyzujemy",
+  "revenueModel": "skąd przychody",
   "websiteStructure": [
-    {"page": "Strona Główna", "content": "Co powinno się znaleźć na homepage"},
-    {"page": "O Nas / Usługi", "content": "Treść sekcji o firmie"},
-    {"page": "Kontakt / CTA", "content": "Jak zachęcić do kontaktu"}
+    {"page": "Strona Główna", "content": "co na homepage"},
+    {"page": "O Nas / Usługi", "content": "treść sekcji"},
+    {"page": "Kontakt / CTA", "content": "jak zachęcić"}
   ]
 }`
 
@@ -204,34 +193,24 @@ JSON:
     )
 
     // 🤖 AGENT 4: Marketing Director
-    const marketingPrompt = `Jesteś dyrektorem marketingu. Planujesz kampanie, nie piszesz generycznych tekstów.
+    const marketingPrompt = `Jesteś dyrektorem marketingu. Marka: "${brandResult.selectedName}"
 
-Marka: "${brandResult.selectedName}"
-UVP: "${productResult.uniqueValueProposition}"
-
-STWÓRZ:
-1. Launch Campaign: Plan 4 tygodni (co robimy każdego tygodnia - konkretnie!)
-2. Content Pillars: 4 tematy treści
-3. Influencer Strategy: Kogo zaangażować i jak?
-4. Paid Ads Copy: 3 kreacje (Facebook, Google, LinkedIn) - headline + body
-5. PR Strategy: Jak zdobyć media coverage?
-
-JSON:
+Odpowiedz TYLKO w formacie JSON:
 {
   "launchCampaign": {
-    "week1": "Tydzień 1: ...",
-    "week2": "...",
-    "week3": "...",
-    "week4": "..."
+    "week1": "Tydzień 1: co robimy",
+    "week2": "Tydzień 2: co robimy",
+    "week3": "Tydzień 3: co robimy",
+    "week4": "Tydzień 4: co robimy"
   },
-  "contentPillars": ["Temat 1", "2", "3", "4"],
-  "influencerStrategy": "...",
+  "contentPillars": ["temat1", "temat2", "temat3", "temat4"],
+  "influencerStrategy": "kogo zaangażować i jak",
   "paidAdsCopy": [
-    {"platform": "Facebook Ads", "headline": "...", "body": "..."},
-    {"platform": "Google Ads", "headline": "...", "body": "..."},
-    {"platform": "LinkedIn Ads", "headline": "...", "body": "..."}
+    {"platform": "Facebook Ads", "headline": "nagłówek", "body": "treść"},
+    {"platform": "Google Ads", "headline": "nagłówek", "body": "treść"},
+    {"platform": "LinkedIn Ads", "headline": "nagłówek", "body": "treść"}
   ],
-  "prStrategy": "..."
+  "prStrategy": "jak zdobyć media coverage"
 }`
 
     const marketingResult = await callGroqAgent(
@@ -241,23 +220,14 @@ JSON:
     )
 
     // 🤖 AGENT 5: Tech Lead
-    const techPrompt = `Jesteś tech leadem. Dajesz minimalny overview - nie rozpisuj się!
+    const techPrompt = `Jesteś tech leadem. Produkt: "${brandResult.selectedName}"
 
-Produkt: "${brandResult.selectedName}"
-Benefits: ${JSON.stringify(productResult.keyBenefits)}
-
-STWÓRZ:
-1. Stack: 1 zdanie opisujące cały stack (np. "Next.js + Supabase + Vercel dla szybkiego MVP")
-2. MVP Timeline: Ile czasu zajmie zbudowanie (realistycznie)
-3. Estimated Budget: Przybliżony koszt MVP (zakres kwoty)
-4. Technical Risks: 3 główne ryzyka techniczne
-
-JSON:
+Odpowiedz TYLKO w formacie JSON:
 {
-  "stack": "1 zdanie z całym stackiem",
-  "mvpTimeline": "X tygodni/miesięcy",
-  "estimatedBudget": "$X - $Y",
-  "technicalRisks": ["Ryzyko 1", "2", "3"]
+  "stack": "1 zdanie z całym stackiem np Next.js + Supabase",
+  "mvpTimeline": "ile czasu zająć budowa MVP",
+  "estimatedBudget": "przybliżony koszt MVP",
+  "technicalRisks": ["ryzyko1", "ryzyko2", "ryzyko3"]
 }`
 
     const techResult = await callGroqAgent(

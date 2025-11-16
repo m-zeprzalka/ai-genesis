@@ -127,19 +127,19 @@ export default function Home() {
 
         {/* Input - Prosty i responsywny */}
         <div className="space-y-3">
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Input
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Opisz swój pomysł na biznes..."
               disabled={loading}
-              className="h-12 sm:h-14 text-base sm:text-lg flex-1 px-4 rounded-xl"
+              className="h-14 sm:h-16 text-base sm:text-lg flex-1 px-5 rounded-xl border-2 focus-visible:ring-2"
             />
             <Button
               onClick={handleGenerate}
               disabled={loading || !prompt.trim()}
-              className="h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg font-semibold rounded-xl w-full sm:w-auto"
+              className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg font-semibold rounded-xl w-full sm:w-auto shadow-lg hover:shadow-xl transition-shadow"
             >
               {loading ? "Generuję..." : "Generuj"}
             </Button>
@@ -166,8 +166,8 @@ export default function Home() {
                 {result.brand.brandStory}
               </p>
 
-              {/* Color Palette - Horizontal, left-aligned */}
-              <div className="flex flex-wrap gap-2 sm:gap-3 mt-6">
+              {/* Paleta Kolorów - Full width na mobile */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
                 {result.design.colorPalette &&
                   Object.entries(result.design.colorPalette).map(
                     ([key, color]) => {
@@ -175,15 +175,19 @@ export default function Home() {
                       return (
                         <div
                           key={key}
-                          className="flex items-center gap-2 bg-background border rounded-lg px-3 py-2"
+                          className="flex items-center gap-3 bg-background border rounded-lg px-4 py-3"
                         >
                           <div
-                            className="w-8 h-8 rounded border-2 flex-shrink-0"
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border-2 flex-shrink-0 shadow"
                             style={{ backgroundColor: colorValue }}
                           />
-                          <div>
-                            <p className="text-xs font-semibold capitalize">
-                              {key}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold capitalize">
+                              {key === "primary"
+                                ? "Główny"
+                                : key === "secondary"
+                                ? "Współrzędny"
+                                : "Akcentujący"}
                             </p>
                             <code className="text-xs text-muted-foreground">
                               {colorValue}
@@ -196,44 +200,69 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Tabs - Scrollable na mobile */}
+            {/* Tabs - Vertical na mobile, horizontal na desktop */}
             <Tabs defaultValue="brand" className="w-full">
-              <div className="overflow-x-auto pb-2 mb-6 -mx-4 px-4">
-                <TabsList className="inline-flex h-12 w-auto gap-1 bg-transparent">
+              <div className="mb-6">
+                <TabsList className="flex sm:inline-flex flex-col sm:flex-row h-auto sm:h-12 w-full sm:w-auto gap-2 sm:gap-1 bg-transparent p-0 sm:p-1">
                   <TabsTrigger
                     value="brand"
-                    className="px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow"
+                    className="justify-start sm:justify-center px-4 py-3 sm:py-2 data-[state=active]:bg-background data-[state=active]:shadow-md w-full sm:w-auto"
                   >
-                    <span className="mr-2">🎯</span>
-                    <span className="hidden sm:inline">Brand</span>
+                    <span className="mr-3 text-lg">🎯</span>
+                    <div className="text-left sm:text-center flex-1 sm:flex-none">
+                      <p className="font-semibold">Marka</p>
+                      <p className="text-xs text-muted-foreground sm:hidden">
+                        Strategia i tożsamość
+                      </p>
+                    </div>
                   </TabsTrigger>
                   <TabsTrigger
                     value="design"
-                    className="px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow"
+                    className="justify-start sm:justify-center px-4 py-3 sm:py-2 data-[state=active]:bg-background data-[state=active]:shadow-md w-full sm:w-auto"
                   >
-                    <span className="mr-2">🎨</span>
-                    <span className="hidden sm:inline">Design</span>
+                    <span className="mr-3 text-lg">🎨</span>
+                    <div className="text-left sm:text-center flex-1 sm:flex-none">
+                      <p className="font-semibold">Design</p>
+                      <p className="text-xs text-muted-foreground sm:hidden">
+                        Logo i paleta
+                      </p>
+                    </div>
                   </TabsTrigger>
                   <TabsTrigger
                     value="product"
-                    className="px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow"
+                    className="justify-start sm:justify-center px-4 py-3 sm:py-2 data-[state=active]:bg-background data-[state=active]:shadow-md w-full sm:w-auto"
                   >
-                    <span className="mr-2">📱</span>
-                    <span className="hidden sm:inline">Produkt</span>
+                    <span className="mr-3 text-lg">📱</span>
+                    <div className="text-left sm:text-center flex-1 sm:flex-none">
+                      <p className="font-semibold">Produkt</p>
+                      <p className="text-xs text-muted-foreground sm:hidden">
+                        Wartość i struktura
+                      </p>
+                    </div>
                   </TabsTrigger>
                   <TabsTrigger
                     value="marketing"
-                    className="px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow"
+                    className="justify-start sm:justify-center px-4 py-3 sm:py-2 data-[state=active]:bg-background data-[state=active]:shadow-md w-full sm:w-auto"
                   >
-                    <span className="mr-2">📢</span>
-                    <span className="hidden sm:inline">Marketing</span>
+                    <span className="mr-3 text-lg">📢</span>
+                    <div className="text-left sm:text-center flex-1 sm:flex-none">
+                      <p className="font-semibold">Marketing</p>
+                      <p className="text-xs text-muted-foreground sm:hidden">
+                        Kampania i reklamy
+                      </p>
+                    </div>
                   </TabsTrigger>
                   <TabsTrigger
                     value="tech"
-                    className="px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow"
+                    className="justify-start sm:justify-center px-4 py-3 sm:py-2 data-[state=active]:bg-background data-[state=active]:shadow-md w-full sm:w-auto"
                   >
-                    <span className="mr-2">⚙️</span>
-                    <span className="hidden sm:inline">Tech</span>
+                    <span className="mr-3 text-lg">⚙️</span>
+                    <div className="text-left sm:text-center flex-1 sm:flex-none">
+                      <p className="font-semibold">Technologia</p>
+                      <p className="text-xs text-muted-foreground sm:hidden">
+                        Stack i budżet
+                      </p>
+                    </div>
                   </TabsTrigger>
                 </TabsList>
               </div>
