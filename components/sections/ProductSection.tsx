@@ -17,6 +17,7 @@ interface ProductSectionProps {
     uniqueValueProposition: string
     pricingStrategy: string
     revenueModel: string
+    websiteStructure: Array<{ page: string; content: string }>
   }
 }
 
@@ -83,6 +84,26 @@ export default function ProductSection({ product }: ProductSectionProps) {
                 <div className="flex-1">
                   <p className="text-muted-foreground">{benefit}</p>
                 </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Website Structure - dla Kowalskiego */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Struktura Strony</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Plan treści dla głównych sekcji witryny
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {product.websiteStructure.map((item, idx) => (
+              <div key={idx} className="border-l-4 border-primary pl-4">
+                <h4 className="font-semibold mb-1">{item.page}</h4>
+                <p className="text-sm text-muted-foreground">{item.content}</p>
               </div>
             ))}
           </div>

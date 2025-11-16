@@ -17,178 +17,142 @@ interface DesignSectionProps {
       body: string
     }
     designPrinciples: string[]
-    keyScreens: Array<{ screen: string; description: string }>
-    personas: Array<{
-      name: string
-      age: string
-      occupation: string
-      emotionalDrivers: string[]
-      motivations: string[]
-    }>
   }
 }
 
 export default function DesignSection({ design }: DesignSectionProps) {
   return (
-    <div className="space-y-6">
-      {/* Logo Description */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Logo Concept</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Wizualna koncepcja zaprojektowana przez Creative Director AI
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-lg leading-relaxed">{design.logoDescription}</p>
-          <div>
-            <h4 className="font-semibold mb-3">Alternatywne kierunki:</h4>
-            <div className="space-y-2">
-              {design.logoVariations.map((variation, idx) => (
-                <div key={idx} className="flex gap-2">
-                  <Badge variant="outline">{idx + 1}</Badge>
-                  <p className="text-muted-foreground">{variation}</p>
-                </div>
-              ))}
+    <div className="space-y-8">
+      {/* Logo Concept */}
+      <div>
+        <h3 className="text-2xl font-bold mb-2">Logo Concept</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Wizualna koncepcja tożsamości marki
+        </p>
+        <div className="bg-muted/30 border rounded-lg p-6 sm:p-8">
+          {/* TODO: Tutaj będzie generowany obraz logo przez AI */}
+          <div className="bg-background border-2 border-dashed rounded-lg p-12 mb-6 flex items-center justify-center min-h-[200px]">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                Logo generation coming soon
+              </p>
+              <p className="text-xs text-muted-foreground">
+                AI-generated logo based on description below
+              </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Color Palette */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Paleta Kolorów</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4">
-            {Object.entries(design.colorPalette).map(
-              ([name, colorWithDesc]) => {
-                const colorValue = colorWithDesc.split(" ")[0]
-                return (
-                  <div key={name} className="text-center">
-                    <div
-                      className="w-full aspect-square rounded-lg border-2 shadow-lg mb-2"
-                      style={{ backgroundColor: colorValue }}
-                    />
-                    <p className="text-sm font-semibold capitalize">{name}</p>
-                    <code className="text-xs text-muted-foreground block">
+          <div className="space-y-4">
+            <div>
+              <p className="font-semibold mb-2">Główna koncepcja:</p>
+              <p className="text-muted-foreground leading-relaxed">
+                {design.logoDescription}
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-3">Alternatywne kierunki:</p>
+              <div className="space-y-2">
+                {design.logoVariations.map((variation, idx) => (
+                  <div key={idx} className="flex gap-3">
+                    <span className="text-primary font-semibold flex-shrink-0">
+                      {idx + 1}.
+                    </span>
+                    <p className="text-muted-foreground">{variation}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Color Palette - Spotify style, left-aligned */}
+      <div>
+        <h3 className="text-2xl font-bold mb-2">Color Palette</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Paleta kolorów marki z uzasadnieniem wyboru
+        </p>
+        <div className="space-y-3">
+          {Object.entries(design.colorPalette).map(([name, colorWithDesc]) => {
+            const parts = colorWithDesc.split(" ")
+            const colorValue = parts[0]
+            const description = parts
+              .slice(1)
+              .join(" ")
+              .replace(/^\(|\)$/g, "")
+
+            return (
+              <div
+                key={name}
+                className="flex items-start gap-4 bg-muted/30 border rounded-lg p-4 sm:p-5"
+              >
+                <div
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg border-2 shadow-lg flex-shrink-0"
+                  style={{ backgroundColor: colorValue }}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-3 mb-1">
+                    <p className="font-bold text-lg capitalize">{name}</p>
+                    <code className="text-sm text-muted-foreground font-mono">
                       {colorValue}
                     </code>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {colorWithDesc.substring(colorValue.length + 1)}
-                    </p>
                   </div>
-                )
-              }
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                  {description && (
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
 
       {/* Typography */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Typography</CardTitle>
-        </CardHeader>
-        <CardContent className="grid md:grid-cols-2 gap-4">
-          <div>
-            <h4 className="font-semibold mb-2">Heading Font</h4>
-            <p className="text-muted-foreground">{design.typography.heading}</p>
+      <div>
+        <h3 className="text-2xl font-bold mb-2">Typography</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          System typograficzny marki
+        </p>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div className="bg-muted/30 border rounded-lg p-5">
+            <p className="text-sm font-semibold text-muted-foreground mb-2">
+              Heading Font
+            </p>
+            <p className="text-base leading-relaxed">
+              {design.typography.heading}
+            </p>
           </div>
-          <div>
-            <h4 className="font-semibold mb-2">Body Font</h4>
-            <p className="text-muted-foreground">{design.typography.body}</p>
+          <div className="bg-muted/30 border rounded-lg p-5">
+            <p className="text-sm font-semibold text-muted-foreground mb-2">
+              Body Font
+            </p>
+            <p className="text-base leading-relaxed">
+              {design.typography.body}
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Design Principles */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Design Principles</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {design.designPrinciples.map((principle, idx) => (
-              <div key={idx} className="flex items-start gap-3">
-                <Badge className="mt-1">{idx + 1}</Badge>
-                <p className="text-muted-foreground flex-1">{principle}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Key Screens */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Key Screens</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Główne ekrany aplikacji z opisem layoutu
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-3 gap-4">
-            {design.keyScreens.map((screen, idx) => (
-              <div key={idx} className="p-4 border rounded-lg">
-                <h4 className="font-semibold mb-2">{screen.screen}</h4>
-                <p className="text-sm text-muted-foreground">
-                  {screen.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Personas */}
       <div>
-        <h3 className="text-2xl font-bold mb-4">User Personas</h3>
-        <div className="grid md:grid-cols-3 gap-6">
-          {design.personas.map((persona, idx) => (
-            <Card key={idx}>
-              <CardHeader>
-                <Badge className="w-fit mb-2">Persona {idx + 1}</Badge>
-                <CardTitle>{persona.name}</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {persona.age} • {persona.occupation}
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-semibold mb-2 text-sm">
-                    Emotional Drivers
-                  </h4>
-                  <ul className="space-y-1">
-                    {persona.emotionalDrivers.map((driver, i) => (
-                      <li
-                        key={i}
-                        className="text-sm text-muted-foreground flex items-start gap-2"
-                      >
-                        <span className="text-purple-600 mt-1">♡</span>
-                        <span>{driver}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="font-semibold mb-2 text-sm">Motivations</h4>
-                  <ul className="space-y-1">
-                    {persona.motivations.map((motivation, i) => (
-                      <li
-                        key={i}
-                        className="text-sm text-muted-foreground flex items-start gap-2"
-                      >
-                        <span className="text-green-600 mt-1">★</span>
-                        <span>{motivation}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
+        <h3 className="text-2xl font-bold mb-2">Design Principles</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Fundamentalne zasady systemu projektowego
+        </p>
+        <div className="space-y-3">
+          {design.designPrinciples.map((principle, idx) => (
+            <div
+              key={idx}
+              className="flex gap-4 bg-muted/30 border rounded-lg p-4"
+            >
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+                {idx + 1}
+              </div>
+              <p className="text-base flex-1 leading-relaxed">{principle}</p>
+            </div>
           ))}
         </div>
       </div>

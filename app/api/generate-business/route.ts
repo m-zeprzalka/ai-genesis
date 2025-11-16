@@ -25,14 +25,6 @@ interface GenesisResponse {
       body: string
     }
     designPrinciples: string[]
-    keyScreens: Array<{ screen: string; description: string }>
-    personas: Array<{
-      name: string
-      age: string
-      occupation: string
-      emotionalDrivers: string[]
-      motivations: string[]
-    }>
   }
   product: {
     problemStatement: string
@@ -41,6 +33,7 @@ interface GenesisResponse {
     uniqueValueProposition: string
     pricingStrategy: string
     revenueModel: string
+    websiteStructure: Array<{ page: string; content: string }>
   }
   marketing: {
     launchCampaign: {
@@ -147,13 +140,11 @@ Marka: "${brandResult.selectedName}"
 Story: "${brandResult.brandStory}"
 
 STWÓRZ:
-1. Logo Description: Szczegółowy opis koncepcji (2-3 zdania) - jaki symbol, styl, metafora?
-2. Logo Variations: 3 różne kierunki wizualne (po 1 zdaniu)
-3. Color Palette: 3 kolory hex + uzasadnienie
+1. Logo Description: Szczegółowy opis koncepcji (2-3 zdania) - jaki symbol, styl, metafora? Opisz jak wyglądałby sygnet/logotyp.
+2. Logo Variations: 3 różne kierunki wizualne (po 1 zdaniu każdy)
+3. Color Palette: 3 kolory hex + krótkie uzasadnienie dla każdego
 4. Typography: heading font + body font (z opisem stylu)
 5. Design Principles: 3 zasady design systemu
-6. Key Screens: 3 kluczowe ekrany (nazwa + opis layoutu)
-7. Personas: 3 persony z emotional drivers i motivacjami (NIE tech pain points!)
 
 JSON:
 {
@@ -161,28 +152,14 @@ JSON:
   "logoVariations": ["Wariant 1", "Wariant 2", "Wariant 3"],
   "colorPalette": {
     "primary": "#hex (uzasadnienie)",
-    "secondary": "#hex",
-    "accent": "#hex"
+    "secondary": "#hex (uzasadnienie)",
+    "accent": "#hex (uzasadnienie)"
   },
   "typography": {
     "heading": "Font + opis",
     "body": "Font + opis"
   },
-  "designPrinciples": ["Zasada 1", "2", "3"],
-  "keyScreens": [
-    {"screen": "Homepage", "description": "Opis layoutu"},
-    {"screen": "Dashboard", "description": "..."},
-    {"screen": "Feature Page", "description": "..."}
-  ],
-  "personas": [
-    {
-      "name": "Imię",
-      "age": "28-35",
-      "occupation": "Zawód",
-      "emotionalDrivers": ["Chce czuć się...", "Boi się..."],
-      "motivations": ["Dąży do...", "Marzy o..."]
-    }
-  ]
+  "designPrinciples": ["Zasada 1", "2", "3"]
 }`
 
     const designResult = await callGroqAgent(
@@ -195,7 +172,6 @@ JSON:
     const productPrompt = `Jesteś strategiem produktu. Nie myślisz o tech stacku, tylko o VALUE PROPOSITION.
 
 Marka: "${brandResult.selectedName}"
-Persony: ${JSON.stringify(designResult.personas)}
 
 STWÓRZ:
 1. Problem Statement: Jaki realny problem rozwiązujemy? (2 zdania)
@@ -204,6 +180,7 @@ STWÓRZ:
 4. Unique Value Proposition: 1 zdanie - dlaczego my, a nie konkurencja?
 5. Pricing Strategy: Jak monetyzujemy?
 6. Revenue Model: Skąd przychody?
+7. Website Structure: 3 główne strony/sekcje na stronie (Homepage, O nas, Kontakt - dla KOWALSKIEGO, nie SaaS dashboard!)
 
 JSON:
 {
@@ -212,7 +189,12 @@ JSON:
   "keyBenefits": ["Benefit 1", "2", "3", "4", "5"],
   "uniqueValueProposition": "...",
   "pricingStrategy": "...",
-  "revenueModel": "..."
+  "revenueModel": "...",
+  "websiteStructure": [
+    {"page": "Strona Główna", "content": "Co powinno się znaleźć na homepage"},
+    {"page": "O Nas / Usługi", "content": "Treść sekcji o firmie"},
+    {"page": "Kontakt / CTA", "content": "Jak zachęcić do kontaktu"}
+  ]
 }`
 
     const productResult = await callGroqAgent(

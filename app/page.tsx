@@ -33,14 +33,6 @@ interface GenesisResponse {
       body: string
     }
     designPrinciples: string[]
-    keyScreens: Array<{ screen: string; description: string }>
-    personas: Array<{
-      name: string
-      age: string
-      occupation: string
-      emotionalDrivers: string[]
-      motivations: string[]
-    }>
   }
   product: {
     problemStatement: string
@@ -49,6 +41,7 @@ interface GenesisResponse {
     uniqueValueProposition: string
     pricingStrategy: string
     revenueModel: string
+    websiteStructure: Array<{ page: string; content: string }>
   }
   marketing: {
     launchCampaign: {
@@ -117,68 +110,64 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="container mx-auto py-12 px-4 max-w-7xl">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold mb-3 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Projekt Genesis
+      {/* Hero Section - Ultra minimalistyczny jak GPT */}
+      <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-20 max-w-3xl">
+        <div className="mb-10 sm:mb-14">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 tracking-tight">
+            Genesis
           </h1>
-          <p className="text-2xl text-muted-foreground mb-2">
-            AI Agency Core • Kompletny Biznes w 60 sekund
+          <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed mb-3">
+            Kompleksowa aplikacja generująca pomysł na Twój brand.
           </p>
-          <p className="text-sm text-muted-foreground">
-            5 Działów AI: Strategia • Design • Produkt • Marketing • Tech
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+            Od strategii i designu po gotowe koncepcje marketingowe — nie
+            potrzebujesz agencji reklamowej, żeby rozpocząć swój biznes.
           </p>
         </div>
 
-        {/* Input Section */}
-        <Card className="mb-12 border-2">
-          <CardContent className="pt-6">
-            <div className="flex gap-3">
-              <Input
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Opisz swój pomysł na biznes... (np. 'Platforma do wymiany książek w Warszawie')"
-                disabled={loading}
-                className="text-base h-12"
-              />
-              <Button
-                onClick={handleGenerate}
-                disabled={loading || !prompt.trim()}
-                size="lg"
-                className="px-8"
-              >
-                {loading ? "🔮 Orkiestruję Agentów..." : "✨ Generuj Biznes"}
-              </Button>
-            </div>
-            {error && (
-              <p className="text-sm text-destructive mt-3 font-semibold">
-                {error}
-              </p>
-            )}
-            {loading && (
-              <p className="text-sm text-muted-foreground mt-3">
-                Agent 1 (Brand Chief) → Agent 2 (Creative Director) → Agent 3
-                (Product Owner) → Agent 4 (Growth Hacker) → Agent 5
-                (Architect)...
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        {/* Input - Prosty i responsywny */}
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <Input
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Opisz swój pomysł na biznes..."
+              disabled={loading}
+              className="h-12 sm:h-14 text-base sm:text-lg flex-1 px-4 rounded-xl"
+            />
+            <Button
+              onClick={handleGenerate}
+              disabled={loading || !prompt.trim()}
+              className="h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg font-semibold rounded-xl w-full sm:w-auto"
+            >
+              {loading ? "Generuję..." : "Generuj"}
+            </Button>
+          </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          {loading && (
+            <p className="text-sm text-muted-foreground">
+              Orkiestrator AI pracuje nad Twoim biznesem...
+            </p>
+          )}
+        </div>
+      </div>
 
-        {/* Results */}
-        {result && (
-          <div className="space-y-8">
-            {/* Project Header */}
-            <div className="text-center py-12 border-2 rounded-lg bg-gradient-to-br from-background to-muted/20">
-              <h2 className="text-5xl font-bold mb-3">
+      {/* Results - Klasyczny grid layout, left-aligned */}
+      {result && (
+        <div className="border-t bg-muted/20">
+          <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-16 max-w-6xl">
+            {/* Project Header - Wyrównanie do lewej */}
+            <div className="mb-10 sm:mb-14">
+              <h2 className="text-4xl sm:text-5xl font-bold mb-4">
                 {result.brand.selectedName}
               </h2>
-              <p className="text-xl text-muted-foreground italic mb-6">
-                &ldquo;{result.brand.brandStory}&rdquo;
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl leading-relaxed">
+                {result.brand.brandStory}
               </p>
-              <div className="flex justify-center gap-3">
+
+              {/* Color Palette - Horizontal, left-aligned */}
+              <div className="flex flex-wrap gap-2 sm:gap-3 mt-6">
                 {result.design.colorPalette &&
                   Object.entries(result.design.colorPalette).map(
                     ([key, color]) => {
@@ -186,59 +175,92 @@ export default function Home() {
                       return (
                         <div
                           key={key}
-                          className="w-12 h-12 rounded-lg border-2 shadow-lg"
-                          style={{ backgroundColor: colorValue }}
-                          title={color}
-                        />
+                          className="flex items-center gap-2 bg-background border rounded-lg px-3 py-2"
+                        >
+                          <div
+                            className="w-8 h-8 rounded border-2 flex-shrink-0"
+                            style={{ backgroundColor: colorValue }}
+                          />
+                          <div>
+                            <p className="text-xs font-semibold capitalize">
+                              {key}
+                            </p>
+                            <code className="text-xs text-muted-foreground">
+                              {colorValue}
+                            </code>
+                          </div>
+                        </div>
                       )
                     }
                   )}
               </div>
             </div>
 
-            {/* Tabs */}
+            {/* Tabs - Scrollable na mobile */}
             <Tabs defaultValue="brand" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 h-12">
-                <TabsTrigger value="brand" className="text-sm">
-                  🎯 Brand
-                </TabsTrigger>
-                <TabsTrigger value="design" className="text-sm">
-                  🎨 Design
-                </TabsTrigger>
-                <TabsTrigger value="product" className="text-sm">
-                  📱 Produkt
-                </TabsTrigger>
-                <TabsTrigger value="marketing" className="text-sm">
-                  📢 Marketing
-                </TabsTrigger>
-                <TabsTrigger value="tech" className="text-sm">
-                  ⚙️ Tech
-                </TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto pb-2 mb-6 -mx-4 px-4">
+                <TabsList className="inline-flex h-12 w-auto gap-1 bg-transparent">
+                  <TabsTrigger
+                    value="brand"
+                    className="px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow"
+                  >
+                    <span className="mr-2">🎯</span>
+                    <span className="hidden sm:inline">Brand</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="design"
+                    className="px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow"
+                  >
+                    <span className="mr-2">🎨</span>
+                    <span className="hidden sm:inline">Design</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="product"
+                    className="px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow"
+                  >
+                    <span className="mr-2">📱</span>
+                    <span className="hidden sm:inline">Produkt</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="marketing"
+                    className="px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow"
+                  >
+                    <span className="mr-2">📢</span>
+                    <span className="hidden sm:inline">Marketing</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="tech"
+                    className="px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow"
+                  >
+                    <span className="mr-2">⚙️</span>
+                    <span className="hidden sm:inline">Tech</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
-              <TabsContent value="brand" className="mt-6">
+              <TabsContent value="brand" className="mt-0">
                 <BrandSection brand={result.brand} />
               </TabsContent>
 
-              <TabsContent value="design" className="mt-6">
+              <TabsContent value="design" className="mt-0">
                 <DesignSection design={result.design} />
               </TabsContent>
 
-              <TabsContent value="product" className="mt-6">
+              <TabsContent value="product" className="mt-0">
                 <ProductSection product={result.product} />
               </TabsContent>
 
-              <TabsContent value="marketing" className="mt-6">
+              <TabsContent value="marketing" className="mt-0">
                 <MarketingSection marketing={result.marketing} />
               </TabsContent>
 
-              <TabsContent value="tech" className="mt-6">
+              <TabsContent value="tech" className="mt-0">
                 <TechSection tech={result.tech} />
               </TabsContent>
             </Tabs>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </main>
   )
 }
