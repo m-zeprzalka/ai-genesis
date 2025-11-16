@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -68,6 +68,19 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<GenesisResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const resultsRef = useRef<HTMLDivElement>(null)
+
+  // Płynne scrollowanie do wyników po wygenerowaniu
+  useEffect(() => {
+    if (result && resultsRef.current) {
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        })
+      }, 100)
+    }
+  }, [result])
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -110,53 +123,62 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero Section - Ultra minimalistyczny jak GPT */}
-      <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-20 max-w-3xl">
-        <div className="mb-10 sm:mb-14">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 tracking-tight">
-            Genesis
-          </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed mb-3">
-            Kompleksowa aplikacja generująca pomysł na Twój brand.
-          </p>
-          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Od strategii i designu po gotowe koncepcje marketingowe — nie
-            potrzebujesz agencji reklamowej, żeby rozpocząć swój biznes.
-          </p>
-        </div>
-
-        {/* Input - Prosty i responsywny */}
-        <div className="space-y-3">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Input
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Opisz swój pomysł na biznes..."
-              disabled={loading}
-              className="h-14 sm:h-16 text-base sm:text-lg flex-1 px-5 rounded-xl border-2 focus-visible:ring-2"
-            />
-            <Button
-              onClick={handleGenerate}
-              disabled={loading || !prompt.trim()}
-              className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg font-semibold rounded-xl w-full sm:w-auto shadow-lg hover:shadow-xl transition-shadow"
-            >
-              {loading ? "Generuję..." : "Generuj"}
-            </Button>
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          {loading && (
-            <p className="text-sm text-muted-foreground">
-              Orkiestrator AI pracuje nad Twoim biznesem...
+      {/* Hero Section */}
+      <div className="container mx-auto px-4 sm:px-6 max-w-3xl min-h-screen flex items-center">
+        <div className="w-full">
+          <div className="mb-10 sm:mb-14">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
+              Genesis - Business Maker
+            </h1>
+            <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed mb-3">
+              <strong>Zamień pomysł w gotowy biznes - W 60 sekund</strong>
             </p>
-          )}
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+              Od Strategii i Designu po gotowe Koncepcje Marketingowe — nie
+              potrzebujesz agencji reklamowej, żeby rozpocząć swój biznes
+            </p>
+          </div>
+
+          {/* Input - Prosty i responsywny */}
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Input
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Opisz swój pomysł na biznes..."
+                disabled={loading}
+                className="h-14 sm:h-16 py-4 text-base sm:text-lg flex-1 px-5 rounded-xl border-2 focus-visible:ring-2"
+              />
+              <Button
+                onClick={handleGenerate}
+                disabled={loading || !prompt.trim()}
+                className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg font-semibold rounded-xl w-full sm:w-auto shadow-lg hover:shadow-xl transition-shadow"
+              >
+                {loading ? "Tworzę Twój Biznes..." : "Stwórz Biznes"}
+              </Button>
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            {loading && (
+              <p className="text-sm text-muted-foreground">
+                Orkiestrator AI pracuje nad Twoim biznesem...
+              </p>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-2 pt-4 text-sm text-muted-foreground/80">
+            <p className="font-medium">Otrzymasz m.in.:</p>
+            <span>🎯 Strategię Marki</span>
+            <span>📊 Analizę Biznesu</span>
+            <span>📈 Plan Marketingowy</span>
+            <span>🌐 Gotową Stronę WWW</span>
+          </div>
         </div>
       </div>
 
       {/* Results - Klasyczny grid layout, left-aligned */}
       {result && (
-        <div className="border-t bg-muted/20">
-          <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-16 max-w-6xl">
+        <div ref={resultsRef} className="border-t bg-muted/10 scroll-mt-4">
+          <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-16 max-w-3xl">
             {/* Project Header - Wyrównanie do lewej */}
             <div className="mb-10 sm:mb-14">
               <h2 className="text-4xl sm:text-5xl font-bold mb-4">
