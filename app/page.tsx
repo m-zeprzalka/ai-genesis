@@ -124,53 +124,103 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="container mx-auto px-4 sm:px-6 max-w-3xl min-h-screen flex items-center">
+      <div className="container mx-auto px-4 sm:px-6 max-w-3xl min-h-[80vh] flex items-center">
         <div className="w-full">
-          <div className="mb-10 sm:mb-14">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
-              Genesis - Business Maker
+          <div className="mb-6 sm:mb-12 space-y-6">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="text-sm font-medium">AI Business Generator</span>
+            </div>
+
+            {/* Main heading with gradient */}
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight">
+              <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Genesis
+              </span>
+              <br />
+              <span className="text-muted-foreground">Business Maker</span>
             </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed mb-3">
-              <strong>Zamień pomysł w gotowy biznes - W 60 sekund</strong>
-            </p>
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-              Od Strategii i Designu po gotowe Koncepcje Marketingowe — nie
-              potrzebujesz agencji reklamowej, żeby rozpocząć swój biznes
-            </p>
+
+            {/* Description with better typography */}
+            <div className="space-y-3 max-w-2xl">
+              <p className="text-xl sm:text-2xl font-semibold leading-relaxed">
+                Zamień pomysł w gotowy biznes — w 60 sekund
+              </p>
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+                Od strategii i designu po gotowe koncepcje marketingowe.
+                <br className="hidden sm:block" />
+                Nie potrzebujesz agencji reklamowej, żeby rozpocząć swój biznes.
+              </p>
+            </div>
           </div>
 
-          {/* Input - Prosty i responsywny */}
-          <div className="space-y-3">
+          {/* Input - Enhanced design */}
+          <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-3">
-              <Input
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Opisz swój pomysł na biznes..."
-                disabled={loading}
-                className="h-14 sm:h-16 py-4 text-base sm:text-lg flex-1 px-5 rounded-xl border-2 focus-visible:ring-2"
-              />
+              <div className="relative flex-1">
+                <Input
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Opisz swój pomysł na biznes..."
+                  disabled={loading}
+                  className="h-14 sm:h-16 py-4 text-base sm:text-lg px-5 rounded-2xl border-2 focus-visible:ring-2 focus-visible:ring-offset-1 bg-background/50 backdrop-blur-sm"
+                />
+              </div>
               <Button
                 onClick={handleGenerate}
                 disabled={loading || !prompt.trim()}
-                className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg font-semibold rounded-xl w-full sm:w-auto shadow-lg hover:shadow-xl transition-shadow"
+                size="lg"
+                className="h-14 sm:h-16 px-8 sm:px-12 text-base sm:text-lg font-semibold rounded-2xl w-full sm:w-auto shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
-                {loading ? "Tworzę Twój Biznes..." : "Stwórz Biznes"}
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Tworzę...
+                  </span>
+                ) : (
+                  "Stwórz Biznes"
+                )}
               </Button>
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
+
+            {/* Error & Loading states */}
+            {error && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                <span className="text-sm text-destructive font-medium">
+                  {error}
+                </span>
+              </div>
+            )}
             {loading && (
-              <p className="text-sm text-muted-foreground">
-                Orkiestrator AI pracuje nad Twoim biznesem...
-              </p>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                <p className="text-sm text-muted-foreground">
+                  Orkiestrator AI analizuje Twój pomysł...
+                </p>
+              </div>
             )}
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-2 pt-4 text-sm text-muted-foreground/80">
-            <p className="font-medium">Otrzymasz m.in.:</p>
-            <span>🎯 Strategię Marki</span>
-            <span>📊 Analizę Biznesu</span>
-            <span>📈 Plan Marketingowy</span>
-            <span>🌐 Gotową Stronę WWW</span>
+
+          {/* Feature pills - Enhanced */}
+          <div className="flex flex-wrap gap-2 pt-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border text-sm">
+              <span>🎯</span>
+              <span className="font-medium">Strategia Marki</span>
+            </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border text-sm">
+              <span>🎨</span>
+              <span className="font-medium">AI Logo</span>
+            </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border text-sm">
+              <span>📈</span>
+              <span className="font-medium">Plan Marketingowy</span>
+            </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border text-sm">
+              <span>🌐</span>
+              <span className="font-medium">Struktura Strony</span>
+            </div>
           </div>
         </div>
       </div>
