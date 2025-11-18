@@ -7,10 +7,32 @@ interface GenesisResponse {
   brand: {
     selectedName: string
     nameOptions: string[]
+    nameRationale: string
+    slogan: string
+    archetype: {
+      name: string
+      icon: string
+      description: string
+    }
+    brandMantra: string
+    mission: string
+    vision: string
     brandStory: string
-    voiceAndTone: string
-    competitorPositioning: string
+    voiceAndTone: {
+      voice: string
+      tone: string
+      examples: string[]
+    }
+    positioningStatement: string
     coreValues: string[]
+    persona: {
+      name: string
+      age: number
+      demographics: string
+      painPoints: string[]
+      goals: string[]
+      howWeHelp: string
+    }
   }
   design: {
     logoDescription: string
@@ -66,6 +88,9 @@ async function callAIAgent(
   let lastError: Error | null = null
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let content = ""
+    let cleanContent = ""
+
     try {
       const response = await fetch(
         "https://api.groq.com/openai/v1/chat/completions",
@@ -93,13 +118,27 @@ async function callAIAgent(
       }
 
       const data = await response.json()
-      const content = data.choices[0]?.message?.content || "{}"
+      content = data.choices[0]?.message?.content || "{}"
 
-      // Clean markdown artifacts
-      const cleanContent = content
-        .replace(/```json\n?/g, "")
-        .replace(/```\n?/g, "")
-        .trim()
+      // Agresywne czyszczenie JSON
+      cleanContent = content.trim()
+
+      // Usuń markdown code blocks
+      cleanContent = cleanContent.replace(/```json\n?/gi, "")
+      cleanContent = cleanContent.replace(/```\n?/g, "")
+      cleanContent = cleanContent.trim()
+
+      // Usuń tekst przed pierwszym {
+      const firstBrace = cleanContent.indexOf("{")
+      if (firstBrace > 0) {
+        cleanContent = cleanContent.substring(firstBrace)
+      }
+
+      // Usuń tekst po ostatnim }
+      const lastBrace = cleanContent.lastIndexOf("}")
+      if (lastBrace > -1 && lastBrace < cleanContent.length - 1) {
+        cleanContent = cleanContent.substring(0, lastBrace + 1)
+      }
 
       const parsed = JSON.parse(cleanContent)
       return parsed
@@ -108,8 +147,11 @@ async function callAIAgent(
 
       // Don't retry on JSON parse errors - bad prompt
       if (e instanceof SyntaxError) {
-        console.error("JSON parse failed:", e)
-        throw new Error("AI zwróciło niepoprawny JSON")
+        console.error("=== JSON PARSE FAILED ===")
+        console.error("Raw response:", content)
+        console.error("After cleaning:", cleanContent)
+        console.error("Error:", e.message)
+        throw new Error("AI nie zwróciło poprawnego JSON")
       }
 
       // Retry on network/API errors
@@ -144,45 +186,78 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 🤖 AGENT 1: Brand Strategist
-    // Focus: Naming, storytelling, emotional connection
-    const brandPrompt = `Jesteś ekspertem od brandingu z 15-letnim doświadczeniem. Tworzysz marki, które ludzie PAMIĘTAJĄ i z którymi się IDENTYFIKUJĄ.
+    // 🤖 AGENT 1: Brand Strategist (Enterprise Edition v2)
+    // Focus: Pełna tożsamość marki - naming, archetyp, misja, persona + głęboka strategia
+    const brandPrompt = `Jesteś Senior Brand strategiem. Tworzysz kompleksowe fundamenty marek dla startupów.
 
-POMYSŁ KLIENTA: "${prompt}"
+POMYSŁ: "${prompt}"
 
-ZADANIE:
-Stwórz fundament marki, która:
-- Ma nazwę zapadającą w pamięć (krótką, wymawialną, unikalną)
-- Opowiada emocjonalną historię (dlaczego ta marka MUSI istnieć?)
-- Ma wyraźny charakter (jak mówi? jaka jest jej osobowość?)
-- Wyróżnia się na rynku (czym jest INNA niż konkurencja?)
-
-PRZYKŁADY DOBRYCH NAZW:
-- Airbnb (air + bed & breakfast) - proste, opisowe
-- Spotify (spot + identify) - łatwe do zapamiętania
-- Stripe (paski płatnicze) - wizualne, tech
-
-Odpowiedz TYLKO poprawnym JSON (bez markdown, bez komentarzy):
+ZWRÓĆ PEŁNĄ TOŻSAMOŚĆ MARKI w JSON:
 {
-  "selectedName": "Najlepsza nazwa z 5 opcji",
-  "nameOptions": ["nazwa1", "nazwa2", "nazwa3", "nazwa4", "nazwa5"],
-  "brandStory": "2-3 zdania: Dlaczego ta marka powstaje? Jaki problem zauważyliśmy? Jaką zmianę chcemy wprowadzić?",
-  "voiceAndTone": "Opis w 2 zdaniach: Czy marka jest formalna czy casualowa? Poważna czy playful? Expert czy buddy?",
-  "competitorPositioning": "1-2 zdania: Czym KONKRETNIE różnimy się od konkurencji? Co robimy lepiej/inaczej?",
-  "coreValues": ["wartość1 (1-2 słowa)", "wartość2", "wartość3"]
-}`
+  "selectedName": "Główna nazwa marki",
+  "nameOptions": ["alternatywa1", "alternatywa2", "alternatywa3", "alternatywa4"],
+  "nameRationale": "1-2 zdania: DLACZEGO 'selectedName' jest idealna (np. gra słów, metafora, łatwość zapamiętania)",
+  "slogan": "Chwytliwy slogan/tagline (max kilka słów, ZEWNĘTRZNY, dla klienta)",
+  "archetype": {
+    "name": "Archetyp (wybierz 1 z 12: Mędrzec, Odkrywca, Bohater, Buntownik, Mag, Twórca, Władca, Opiekun, Kochanek, Blazen, Zwykły Człowiek, Niewinny)",
+    "icon": "Emoji ikona archetypu (np. 🧙 dla Mędrca, 🎯 dla Bohatera)",
+    "description": "1-2 zdania dlaczego ten archetyp pasuje do marki"
+  },
+  "brandMantra": "Mantra marki (3-5 słów, WEWNĘTRZNY kompas dla zespołu, np. 'Autentyczne Sportowe Osiągi')",
+  "mission": "Krótka misja (CO robimy TERAZ) - 1-2 zdania",
+  "vision": "Inspirująca wizja (GDZIE chcemy być za 5 lat) - 1-2 zdania",
+  "brandStory": "Gotowa historia 'O nas' (3 akapity, ~150 słów) - emocjonalna, autentyczna, inspirująca",
+  "voiceAndTone": {
+    "voice": "Głos marki (np. Ekspercki, Przyjacielski, Inspirujący)",
+    "tone": "Ton komunikacji (np. Profesjonalny, Ludzki, Bezpośredni)",
+    "examples": [
+      "Przykład 1: Jak powitać klienta na stronie",
+      "Przykład 2: Jak odpowiedzieć na negatywny komentarz",
+      "Przykład 3: Jak ogłosić nową funkcję na social media"
+    ]
+  },
+  "positioningStatement": "Statement pozycjonujący wg formuły: 'Dla [Grupa Docelowa], [Nazwa Marki] jest [Kategoria Rynkowa], która [Kluczowa Korzyść/UVP], ponieważ [Powód, by Wierzyć].'",
+  "coreValues": ["Wartość1", "Wartość2", "Wartość3"],
+  "persona": {
+    "name": "Imię i nazwisko idealnego klienta",
+    "age": 35,
+    "demographics": "Szczegóły: zawód, dochód, lokalizacja, styl życia",
+    "painPoints": [
+      "Ból 1: Konkretny problem klienta",
+      "Ból 2",
+      "Ból 3"
+    ],
+    "goals": [
+      "Cel 1: Co klient chce osiągnąć",
+      "Cel 2",
+      "Cel 3"
+    ],
+    "howWeHelp": "2-3 zdania: JAK KONKRETNIE nasz produkt rozwiązuje bóle i pomaga osiągnąć cele"
+  }
+}
+
+PRZYKŁADY:
+- Nazwy: Airbnb (air+bnb), Stripe (payment stripes)
+- Slogan: Nike "Just Do It", Apple "Think Different"
+- Archetyp: Apple = Twórca, Nike = Bohater, Volvo = Opiekun
+- Mantra: Nike "Authentic Athletic Performance", Disney "Fun Family Entertainment"
+- Positioning Statement: "Dla zapracowanych profesjonalistów, Slack jest platformą do komunikacji, która zastępuje e-mail i przyspiesza pracę, ponieważ łączy wszystkie rozmowy i narzędzia w jednym miejscu."
+
+Odpowiedz TYLKO poprawnym JSON (bez markdown, bez komentarzy):`
 
     const brandResult = await callAIAgent(brandPrompt, prompt, apiKey, 0.9)
 
     // 🤖 AGENT 2: Creative Director
     // Focus: Visual identity, colors psychology, typography
-    // KONTEKST: Widzi nazwę marki i brand story
+    // KONTEKST: Widzi nazwę marki, slogan i archetyp
     const designPrompt = `Jesteś creative directorem ze specjalizacją w identyfikacji wizualnej. Projektowałeś dla startupów, które później stały się unicornami.
 
 KONTEKST PROJEKTU:
 Marka: "${brandResult.selectedName}"
+Slogan: "${brandResult.slogan}"
+Archetyp: ${brandResult.archetype.name} - ${brandResult.archetype.description}
 Historia: "${brandResult.brandStory}"
-Charakter: ${brandResult.voiceAndTone}
+Głos & Ton: ${brandResult.voiceAndTone.voice} / ${brandResult.voiceAndTone.tone}
 
 ZADANIE:
 Zaprojektuj spójną identyfikację wizualną, która:
@@ -195,7 +270,6 @@ KLUCZOWE ZASADY KOLORÓW:
 - Food/Wellness: zielony (natura), pomarańcz (energia)
 - Luxury: czerń, złoto, burgund
 - Creative/Art: jasne kolory, wysokie saturacje
-- NIE UŻYWAJ: #3B82F6, #10B981, #EF4444 (zbyt powszechne!)
 
 PRZYKŁAD DOBREGO OPISU LOGO:
 "Stylizowana litera S tworząca nieskończoną pętlę, symbolizująca ciągły rozwój i iterację. Minimalistyczny, geometric style. Monochrom dla uniwersalności."

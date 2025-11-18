@@ -15,10 +15,32 @@ interface GenesisResponse {
   brand: {
     selectedName: string
     nameOptions: string[]
+    nameRationale: string
+    slogan: string
+    archetype: {
+      name: string
+      icon: string
+      description: string
+    }
+    brandMantra: string
+    mission: string
+    vision: string
     brandStory: string
-    voiceAndTone: string
-    competitorPositioning: string
+    voiceAndTone: {
+      voice: string
+      tone: string
+      examples: string[]
+    }
+    positioningStatement: string
     coreValues: string[]
+    persona: {
+      name: string
+      age: number
+      demographics: string
+      painPoints: string[]
+      goals: string[]
+      howWeHelp: string
+    }
   }
   design: {
     logoDescription: string
@@ -124,7 +146,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="container mx-auto px-4 sm:px-6 max-w-3xl min-h-[80vh] flex items-center">
+      <div className="container mx-auto p-4 sm:p-6 max-w-3xl min-h-[80vh] flex items-center">
         <div className="w-full">
           <div className="mb-6 sm:mb-12 space-y-6">
             {/* Badge */}
