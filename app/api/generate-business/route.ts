@@ -77,31 +77,55 @@ interface GenesisResponse {
   }
 }
 
-// Enhanced AI caller with retry logic and better error handling
+// AI Provider configuration with automatic failover
+const AI_PROVIDERS = [
+  {
+    name: "Groq",
+    endpoint: "https://api.groq.com/openai/v1/chat/completions",
+    model: "llama-3.3-70b-versatile",
+    getKey: () => process.env.GROQ_API_KEY,
+  },
+  {
+    name: "Cerebras",
+    endpoint: "https://api.cerebras.ai/v1/chat/completions",
+    model: "llama3.1-70b",
+    getKey: () => process.env.CEREBRAS_API_KEY,
+  },
+]
+
+// Enhanced AI caller with multi-provider failover
 async function callAIAgent(
   systemPrompt: string,
   userPrompt: string,
-  apiKey: string,
+  _apiKey: string, // Legacy param, now using env-based providers
   temperature: number = 0.8,
   maxRetries: number = 2
 ) {
   let lastError: Error | null = null
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    let content = ""
-    let cleanContent = ""
+  // Try each provider in order
+  for (const provider of AI_PROVIDERS) {
+    const apiKey = provider.getKey()
+    if (!apiKey) {
+      console.log(`⏭️ Skipping ${provider.name} (no API key)`)
+      continue
+    }
 
-    try {
-      const response = await fetch(
-        "https://api.groq.com/openai/v1/chat/completions",
-        {
+    console.log(`🔄 Trying ${provider.name}...`)
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      let content = ""
+      let cleanContent = ""
+
+      try {
+        const response = await fetch(provider.endpoint, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
+            model: provider.model,
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt },
@@ -109,62 +133,74 @@ async function callAIAgent(
             temperature,
             max_tokens: 3000,
           }),
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          // Check if it's HTML error page (Cloudflare 500)
+          if (errorText.includes("<!DOCTYPE html>")) {
+            throw new Error(
+              `${provider.name} server error (${response.status})`
+            )
+          }
+          throw new Error(`API error: ${response.status} - ${errorText}`)
         }
-      )
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`API error: ${response.status} - ${errorText}`)
-      }
+        const data = await response.json()
+        content = data.choices[0]?.message?.content || "{}"
 
-      const data = await response.json()
-      content = data.choices[0]?.message?.content || "{}"
+        // Agresywne czyszczenie JSON
+        cleanContent = content.trim()
 
-      // Agresywne czyszczenie JSON
-      cleanContent = content.trim()
+        // Usuń markdown code blocks
+        cleanContent = cleanContent.replace(/```json\n?/gi, "")
+        cleanContent = cleanContent.replace(/```\n?/g, "")
+        cleanContent = cleanContent.trim()
 
-      // Usuń markdown code blocks
-      cleanContent = cleanContent.replace(/```json\n?/gi, "")
-      cleanContent = cleanContent.replace(/```\n?/g, "")
-      cleanContent = cleanContent.trim()
+        // Usuń tekst przed pierwszym {
+        const firstBrace = cleanContent.indexOf("{")
+        if (firstBrace > 0) {
+          cleanContent = cleanContent.substring(firstBrace)
+        }
 
-      // Usuń tekst przed pierwszym {
-      const firstBrace = cleanContent.indexOf("{")
-      if (firstBrace > 0) {
-        cleanContent = cleanContent.substring(firstBrace)
-      }
+        // Usuń tekst po ostatnim }
+        const lastBrace = cleanContent.lastIndexOf("}")
+        if (lastBrace > -1 && lastBrace < cleanContent.length - 1) {
+          cleanContent = cleanContent.substring(0, lastBrace + 1)
+        }
 
-      // Usuń tekst po ostatnim }
-      const lastBrace = cleanContent.lastIndexOf("}")
-      if (lastBrace > -1 && lastBrace < cleanContent.length - 1) {
-        cleanContent = cleanContent.substring(0, lastBrace + 1)
-      }
+        const parsed = JSON.parse(cleanContent)
+        console.log(`✅ ${provider.name} succeeded`)
+        return parsed
+      } catch (e) {
+        lastError = e instanceof Error ? e : new Error("Unknown error")
 
-      const parsed = JSON.parse(cleanContent)
-      return parsed
-    } catch (e) {
-      lastError = e instanceof Error ? e : new Error("Unknown error")
+        // Don't retry on JSON parse errors - bad prompt
+        if (e instanceof SyntaxError) {
+          console.error(`❌ ${provider.name} JSON parse failed`)
+          console.error("Raw response:", content)
+          console.error("After cleaning:", cleanContent)
+          console.error("Error:", e.message)
+          // Try next provider instead of throwing
+          break
+        }
 
-      // Don't retry on JSON parse errors - bad prompt
-      if (e instanceof SyntaxError) {
-        console.error("=== JSON PARSE FAILED ===")
-        console.error("Raw response:", content)
-        console.error("After cleaning:", cleanContent)
-        console.error("Error:", e.message)
-        throw new Error("AI nie zwróciło poprawnego JSON")
-      }
-
-      // Retry on network/API errors
-      if (attempt < maxRetries) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, 1000 * (attempt + 1))
-        )
-        continue
+        // Retry on network/API errors
+        if (attempt < maxRetries) {
+          console.log(`⏳ ${provider.name} retry ${attempt + 1}/${maxRetries}`)
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * (attempt + 1))
+          )
+          continue
+        } else {
+          console.log(`❌ ${provider.name} failed after ${maxRetries} retries`)
+          break // Try next provider
+        }
       }
     }
   }
 
-  throw lastError || new Error("Max retries exceeded")
+  throw lastError || new Error("All AI providers failed")
 }
 
 export async function POST(req: NextRequest) {
