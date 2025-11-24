@@ -35,12 +35,13 @@ interface GenesisResponse {
     }
   }
   design: {
-    logoDescription: string
-    logoVariations: string[]
+    logoConceptA: string
+    logoConceptB: string
+    colorScheme: string
     colorPalette: {
       primary: string
       secondary: string
-      accent: string
+      accent?: string
     }
     typography: {
       heading: string
@@ -283,56 +284,119 @@ Odpowiedz TYLKO poprawnym JSON (bez markdown, bez komentarzy):`
 
     const brandResult = await callAIAgent(brandPrompt, prompt, apiKey, 0.9)
 
-    // 🤖 AGENT 2: Creative Director
-    // Focus: Visual identity, colors psychology, typography
-    // KONTEKST: Widzi nazwę marki, slogan i archetyp
-    const designPrompt = `Jesteś creative directorem ze specjalizacją w identyfikacji wizualnej. Projektowałeś dla startupów, które później stały się unicornami.
+    // 🤖 AGENT 2: Creative Director (Enhanced Edition)
+    // Focus: Logo concepts, color wheel theory, Google Fonts typography
+    // KONTEKST: Widzi pełną tożsamość marki
+    const designPrompt = `Jesteś senior creative directorem. Specjalizujesz się w minimalistycznych sygnетах i profesjonalnych systemach projektowych.
 
-KONTEKST PROJEKTU:
-Marka: "${brandResult.selectedName}"
+KONTEKST MARKI:
+Nazwa: "${brandResult.selectedName}"
 Slogan: "${brandResult.slogan}"
-Archetyp: ${brandResult.archetype.name} - ${brandResult.archetype.description}
-Historia: "${brandResult.brandStory}"
-Głos & Ton: ${brandResult.voiceAndTone.voice} / ${brandResult.voiceAndTone.tone}
+Archetyp: ${brandResult.archetype.name} ${brandResult.archetype.icon}
+Mantra: "${brandResult.brandMantra}"
+Mission: "${brandResult.mission}"
 
-ZADANIE:
-Zaprojektuj spójną identyfikację wizualną, która:
-- Logo: ma KONKRETNY symbol/metaforę (nie ogólniki!)
-- Kolory: psychologicznie dopasowane do branży i emocji marki
-- Typography: odzwierciedla charakter (modern/classic, bold/elegant)
+ZADANIE: Stwórz KOMPLETNY design system
 
-KLUCZOWE ZASADY KOLORÓW:
-- Fintech/SaaS: niebieski (zaufanie), fiolet (innowacja)
-- Food/Wellness: zielony (natura), pomarańcz (energia)
-- Luxury: czerń, złoto, burgund
-- Creative/Art: jasne kolory, wysokie saturacje
+1️⃣ LOGO - 3 KONCEPCJE SYGNETU (ikony symboliczne, bez tekstu):
+- Koncepcja A: Główna wizja (geometryczna, prosta, skalowalna)
+- Koncepcja B: Alternatywne podejście (inna metafora/symbol)
+- Koncepcja C: Kreatywna opcja (bardziej abstrakcyjna/artystyczna)
 
-PRZYKŁAD DOBREGO OPISU LOGO:
-"Stylizowana litera S tworząca nieskończoną pętlę, symbolizująca ciągły rozwój i iterację. Minimalistyczny, geometric style. Monochrom dla uniwersalności."
+WAŻNE DLA AI GENERATION:
+- Opisuj KONKRETNE KSZTAŁTY: "okrąg", "trójkąt", "sześcian", "fala"
+- Używaj słów: "vector icon", "logo mark", "svg style", "flat design"
+- Dodawaj "minimal line art", "simple geometric shape", "monochromatic"
+- Format: "Simple [kształt] icon representing [concept], flat vector style, minimalist logo mark, clean lines, professional brand symbol"
+
+2️⃣ KOLORY - TEORIA KOŁA KOLORÓW:
+Wybierz 1 schemat:
+- KOMPLEMENTARNE: 2 kolory naprzeciwko siebie (kontrast, energia)
+- ANALOGICZNE: 2-3 sąsiednie kolory (harmonia, spokój)
+- TRIADYCZNE: 3 kolory równo rozmieszczone (dynamika, balans)
+- MONOCHROMATYCZNE: 1 kolor + odcienie (elegancja, minimalizm)
+
+ZASADY:
+- Primary: Główny kolor marki (bazując na archetypie)
+- Secondary: Wspierający (z koła kolorów względem primary)
+- Opcjonalnie: Accent (jeśli triadyczny/analogiczny)
+
+PSYCHOLOGIA KOLORÓW WG ARCHETYPU:
+- Mędrzec/Twórca: #2563EB (niebieski - wiedza)
+- Bohater/Władca: #DC2626 (czerwony - akcja)
+- Opiekun/Kochanek: #10B981 (zielony - troska)
+- Buntownik: #7C3AED (fiolet - nonkonformizm)
+
+3️⃣ TYPOGRAFIA - GOOGLE FONTS:
+Wybieraj TYLKO z Google Fonts:
+- Heading: Inter, Poppins, Montserrat, Playfair Display, Merriweather
+- Body: Inter, Open Sans, Roboto, Source Sans Pro, Lato
+
+ZASADY PAROWANIA:
+- Sans + Sans = modern, tech (np. Poppins + Inter)
+- Serif + Sans = elegancja + czytelność (np. Playfair + Open Sans)
+- Display + Neutral = wyrażeniowość + balans (np. Montserrat + Roboto)
+
+Format: "NazwaFontu|https://fonts.google.com/specimen/Nazwa+Fontu|Uzasadnienie"
+
+4️⃣ TYPOGRAFIA - PEŁNA SKALA:
+Oprócz fontów, zdefiniuj KONKRETNE ROZMIARY:
+- H1: 48px/3rem (główne nagłówki hero)
+- H2: 36px/2.25rem (sekcje)
+- H3: 30px/1.875rem (podsekcje)
+- H4: 24px/1.5rem (karty)
+- H5: 20px/1.25rem (małe nagłówki)
+- H6: 16px/1rem (etykiety)
+- Body: 16px/1rem (główny tekst)
+- Small: 14px/0.875rem (notki)
+
+5️⃣ ZASADY PROJEKTOWE - HEURYSTYKI DESIGN SYSTEMU:
+MUSZĄ być dopasowane do marki i archetypu. Przykłady:
+- Archetyp MĘDRZEC: "Clarity over decoration" (nie więcej niż potrzeba)
+- Archetyp BOHATER: "Bold contrasts and decisive actions" (mocne akcenty CTA)
+- Archetyp OPIEKUN: "Warmth through rounded corners" (łagodne formy)
+- Archetyp BUNTOWNIK: "Break the grid intentionally" (asymetria)
 
 Odpowiedz TYLKO poprawnym JSON:
 {
-  "logoDescription": "Szczegółowy opis: Jaki SYMBOL/KSZTAŁT? Jaki STYL (flat/3d/geometric)? Jaka METAFORA? (3-4 zdania)",
-  "logoVariations": [
-    "Wariant 1: [Konkretny opis alternatywnego podejścia]",
-    "Wariant 2: [Inny styl, inna metafora]",
-    "Wariant 3: [Trzecia opcja wizualna]"
-  ],
+  "logoConceptA": "Simple [kształt] icon representing [concept], flat vector style, minimalist logo mark, clean lines, professional brand symbol. Znaczenie: [metafora].",
+  "logoConceptB": "[inny kształt] icon symbolizing [concept], geometric vector art, modern logo design, monochromatic. Znaczenie: [inna metafora].",
+  "logoConceptC": "Abstract [kształt/kompozycja] representing [concept], artistic minimal line art, creative logo mark. Znaczenie: [kreatywna interpretacja].",
+  "colorScheme": "KOMPLEMENTARNE/ANALOGICZNE/TRIADYCZNE/MONOCHROMATYCZNE",
   "colorPalette": {
-    "primary": "#HEXCODE (Nazwa koloru + psychologia: dlaczego TEN kolor dla tej branży?)",
-    "secondary": "#HEXCODE (Inny odcień/barwa + jak wspiera primary?)",
-    "accent": "#HEXCODE (Kontrastowy kolor + do czego służy: CTA/highlights)"
+    "primary": "#HEX|Nazwa koloru|Psychologia: dlaczego ten kolor dla archetypu ${brandResult.archetype.name}",
+    "secondary": "#HEX|Nazwa koloru|Relacja do primary (komplementarny/analogiczny/etc)",
+    "accent": "#HEX|Nazwa koloru|Zastosowanie (CTA/highlights) - OPCJONALNE, tylko jeśli schemat triadyczny"
   },
   "typography": {
-    "heading": "Nazwa fontu (np. Inter, Playfair Display) - dlaczego pasuje do charakteru marki?",
-    "body": "Nazwa fontu (np. Inter, Source Sans) - czemu czytelny i spójny z headingiem?"
+    "heading": "NazwaFontu|https://fonts.google.com/specimen/Nazwa+Fontu|Dlaczego: charakter marki (modern/elegant/bold)",
+    "body": "NazwaFontu|https://fonts.google.com/specimen/Nazwa+Fontu|Dlaczego: czytelność + harmonia z headingiem",
+    "scale": {
+      "h1": "48px/3rem|font-weight: 700|line-height: 1.2",
+      "h2": "36px/2.25rem|font-weight: 700|line-height: 1.3",
+      "h3": "30px/1.875rem|font-weight: 600|line-height: 1.4",
+      "h4": "24px/1.5rem|font-weight: 600|line-height: 1.4",
+      "h5": "20px/1.25rem|font-weight: 600|line-height: 1.5",
+      "h6": "16px/1rem|font-weight: 600|line-height: 1.5",
+      "body": "16px/1rem|font-weight: 400|line-height: 1.6",
+      "small": "14px/0.875rem|font-weight: 400|line-height: 1.5"
+    }
   },
   "designPrinciples": [
-    "Zasada 1 (konkretna dla marki, np. 'Always leave whitespace')",
-    "Zasada 2",
-    "Zasada 3"
+    "Zasada 1: Dopasowana do archetypu ${brandResult.archetype.name} (np. dla Mędrzec: 'Clarity over complexity')",
+    "Zasada 2: Konkretna heurystyka UI (np. 'Mobile-first approach', 'Consistent 8px spacing grid')",
+    "Zasada 3: Accessibility (np. 'WCAG AA contrast ratios', 'Touch targets min 44px')",
+    "Zasada 4: Brand consistency (np. 'Always use primary color for CTAs')",
+    "Zasada 5: User-centric (np. 'Progressive disclosure', 'Feedback within 200ms')"
   ]
-}`
+}
+
+PRZYKŁADY:
+- Logo: "Trójkąt skierowany w górę symbolizujący wzrost i ambicję. Minimalistyczny, geometric style."
+- Kolory: KOMPLEMENTARNE - Primary: #2563EB (niebieski - zaufanie), Secondary: #F59E0B (pomarańczowy - energia)
+- Fonty: "Poppins|https://fonts.google.com/specimen/Poppins|Bold, modern, świetny dla tech startupów"
+
+Odpowiedz TYLKO poprawnym JSON (bez markdown, bez komentarzy):`
 
     const designResult = await callAIAgent(
       designPrompt,

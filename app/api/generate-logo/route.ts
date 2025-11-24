@@ -19,21 +19,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "HUGGINGFACE_API_KEY nie jest skonfigurowany - logo generation opcjonalne",
+            "HUGGINGFACE_API_KEY nie jest skonfigurowany. Dodaj klucz w .env.local",
         },
         { status: 500 }
       )
     }
 
-    // Enhanced prompt for logo generation
-    const enhancedPrompt = `Professional minimalist logo design: ${logoDescription}. Clean, simple, modern, flat design, vector style, white background, high quality, professional branding, corporate identity`
+    // Enhanced prompt dla lepszej jakości logo (vector style)
+    const enhancedPrompt = `${logoDescription}, vector logo icon, flat design illustration, minimalist brand mark, svg style, simple geometric shapes, professional logo design, clean lines, monochromatic or 2 colors max, white background, centered, scalable icon, minimal line art, modern corporate identity`
 
-    console.log("🎨 Generating logo with Stable Diffusion XL...")
+    console.log("🎨 Generating logo with Hugging Face (FLUX.1-dev)...")
 
-    // Hugging Face Inference API - Stable Diffusion XL (DARMOWY i STABILNY!)
-    // NOWY ENDPOINT: router.huggingface.co (stary api-inference już nie działa)
+    // Hugging Face Router API - FLUX.1-dev (lepsza jakość niż schnell)
     const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0",
+      "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-dev",
       {
         method: "POST",
         headers: {
@@ -43,8 +42,10 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           inputs: enhancedPrompt,
           parameters: {
-            num_inference_steps: 25,
-            guidance_scale: 7.5,
+            width: 1024,
+            height: 1024,
+            guidance_scale: 3.5,
+            num_inference_steps: 28, // FLUX-dev używa więcej kroków dla lepszej jakości
           },
         }),
       }
@@ -54,29 +55,27 @@ export async function POST(req: NextRequest) {
       const errorText = await response.text()
       console.error("Hugging Face API error:", errorText)
 
-      // Model loading (503 jest OK - spróbuj ponownie)
+      // Jeśli model się ładuje (503), informuj użytkownika
       if (response.status === 503) {
         return NextResponse.json(
           {
-            error:
-              "Model jest w trakcie ładowania (zimny start). Spróbuj ponownie za 10-20 sekund.",
+            error: "Model się ładuje... Spróbuj ponownie za 20-30 sekund.",
           },
           { status: 503 }
         )
       }
 
-      throw new Error(`Hugging Face API error: ${response.status}`)
+      throw new Error(
+        `Hugging Face API error: ${response.status} - ${errorText}`
+      )
     }
 
-    // Hugging Face zwraca bezpośrednio obraz jako blob
-    const imageBlob = await response.blob()
+    // Konwersja obrazu do base64
+    const imageBuffer = await response.arrayBuffer()
+    const base64Image = Buffer.from(imageBuffer).toString("base64")
+    const imageUrl = `data:image/png;base64,${base64Image}`
 
-    // Konwertuj blob na base64 data URL
-    const arrayBuffer = await imageBlob.arrayBuffer()
-    const base64 = Buffer.from(arrayBuffer).toString("base64")
-    const imageUrl = `data:image/png;base64,${base64}`
-
-    console.log("✅ Logo generated successfully!")
+    console.log("✅ Logo generated successfully with FLUX.1-dev!")
 
     return NextResponse.json({ imageUrl })
   } catch (error) {
